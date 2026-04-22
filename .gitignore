@@ -1,0 +1,6 @@
+geneval/
+T2I-CompBench/
+mmdetection/
+test_eval/
+test_images/
+test_prompts.txt

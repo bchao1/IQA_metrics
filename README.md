@@ -89,19 +89,44 @@ python evaluate_iqa.py \
     --output_dir ./results
 ```
 
-### GenEval with explicit per-prompt task types
+### Running GenEval
+
+GenEval requires images to be organized in its expected directory structure. First, convert your flat image folder using `process_geneval_results.py`:
 
 ```bash
-# tasks.json contains a list like ["two_obj", "color", "counting", ...]
-python evaluate_iqa.py \
-    --images_dir /path/to/images_by_prompt/ \
-    --prompts_file /path/to/prompts.txt \
-    --metrics geneval \
-    --geneval_tasks_file tasks.json \
-    --output_dir ./results
+python process_geneval_results.py \
+    /path/to/flat_images/ \
+    /path/to/geneval_formatted/
 ```
 
-Valid GenEval task types: `two_obj`, `counting`, `color`, `color_attribution`.
+Your flat folder should contain files named `{image_id:06d}_seed{N}.png` (e.g. `000042_seed10.png`). The script reorganizes them into the GenEval format:
+
+```
+geneval_formatted/
+  00000/
+    metadata.jsonl
+    samples/
+      0000.png
+      0001.png
+      ...
+  00001/
+    ...
+```
+
+Then run evaluation using the GenEval scripts directly (from the `geneval/` directory):
+
+```bash
+# Step 1: detect objects and score each image
+python evaluation/evaluate_images.py \
+    /path/to/geneval_formatted/ \
+    --outfile /path/to/results/results.jsonl \
+    --model-path ./evaluation/models
+
+# Step 2: summarize scores by task
+python evaluation/summary_scores.py /path/to/results/results.jsonl
+```
+
+See the [GenEval README](geneval/README.md) for full details.
 
 ### Run individual metrics
 

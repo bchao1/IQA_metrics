@@ -55,6 +55,7 @@ import sys
 from pathlib import Path
 
 import torch
+from tqdm import tqdm
 
 IMAGE_EXTENSIONS = {".jpg", ".jpeg", ".png", ".webp", ".bmp", ".tiff", ".tif"}
 
@@ -149,9 +150,10 @@ def run_image_reward(grouped_images, prompts, device):
 
     per_prompt = {}
     per_image = {}
-    for seed_imgs, prompt in zip(grouped_images, prompts):
+    for seed_imgs, prompt in tqdm(zip(grouped_images, prompts), total=len(prompts),
+                                  desc="ImageReward"):
         seed_scores = []
-        for img_path in seed_imgs:
+        for img_path in tqdm(seed_imgs, desc="  seeds", leave=False):
             s = float(model.score(prompt, str(img_path)))
             per_image[img_path.name] = s
             seed_scores.append(s)
@@ -174,7 +176,7 @@ def run_clipiqa(images, device):
     metric = pyiqa.create_metric("clipiqa", device=device)
 
     per_image = {}
-    for img_path in images:
+    for img_path in tqdm(images, desc="CLIP-IQA"):
         per_image[img_path.name] = float(metric(str(img_path)))
 
     mean = sum(per_image.values()) / len(per_image)
@@ -194,7 +196,7 @@ def run_niqe(images, device):
     metric = pyiqa.create_metric("niqe", device=device)
 
     per_image = {}
-    for img_path in images:
+    for img_path in tqdm(images, desc="NIQE"):
         per_image[img_path.name] = float(metric(str(img_path)))
 
     mean = sum(per_image.values()) / len(per_image)
